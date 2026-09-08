@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rutina — Crimar</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rutina">
+<meta name="theme-color" content="#14151a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14151a;
+    --bg-panel: #1b1d24;
+    --line: #2a2d38;
+    --text: #e8e9ee;
+    --text-dim: #8b8e9c;
+    --track-work: #e8934a;
+    --track-body: #5fb88a;
+    --track-mind: #7d9de8;
+    --track-spirit: #4fc3c9;
+    --track-free: #c77dd6;
+    --track-life: #7a7d8c;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    padding: 32px 16px 80px;
+    line-height: 1.5;
+  }
+  .wrap{max-width: 760px; margin: 0 auto;}
+
+  header{margin-bottom: 28px;}
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--track-work);
+    letter-spacing: 0.02em;
+  }
+  h1{
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 7vw, 44px);
+    margin-top: 6px;
+    letter-spacing: -0.01em;
+  }
+  header p{color: var(--text-dim); margin-top: 8px; font-size: 14px; max-width: 50ch;}
+
+  /* progress bar */
+  .progress-wrap{
+    margin-top: 24px;
+    background: var(--bg-panel);
+    border-radius: 8px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+  }
+  .progress-top{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom: 10px;
+  }
+  .progress-label{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;}
+  .progress-pct{font-family:'IBM Plex Mono', monospace; font-size: 20px; font-weight:500; color: var(--track-work);}
+  .progress-track{
+    height: 8px; background: #23252e; border-radius: 4px; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; width:0%; border-radius:4px;
+    background: linear-gradient(90deg, var(--track-work), var(--track-spirit));
+    transition: width 0.35s ease;
+  }
+  .progress-sub{
+    margin-top: 8px; font-family:'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim);
+  }
+  .reset-btn{
+    margin-top: 10px;
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .reset-btn:active{background: var(--line);}
+
+  /* timeline */
+  .timeline{position: relative; margin-top: 32px;}
+  .timeline::before{
+    content:"";
+    position:absolute;
+    left: 58px;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: var(--line);
+  }
+  .block{
+    position: relative;
+    display: grid;
+    grid-template-columns: 58px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+  }
+  .time{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: right;
+    padding-top: 14px;
+  }
+  .clip{
+    position: relative;
+    background: var(--bg-panel);
+    border-left: 3px solid var(--clip-color, var(--track-work));
+    border-radius: 4px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: background 0.15s ease, opacity 0.2s ease;
+  }
+  .clip::before{
+    content:"";
+    position:absolute;
+    left:-20px; top: 22px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--clip-color, var(--track-work));
+  }
+  .clip.done{opacity: 0.45;}
+  .clip.done .label{text-decoration: line-through;}
+
+  .check{
+    flex-shrink:0;
+    width: 22px; height: 22px;
+    margin-top: 1px;
+    border-radius: 6px;
+    border: 1.5px solid var(--clip-color, var(--track-work));
+    background: transparent;
+    cursor: pointer;
+    display:flex; align-items:center; justify-content:center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .check svg{width:13px; height:13px; opacity:0; transition: opacity 0.15s;}
+  .clip.done .check{background: var(--clip-color, var(--track-work));}
+  .clip.done .check svg{opacity:1;}
+
+  .clip-body{flex:1; min-width:0;}
+  .clip .label{font-weight: 600; font-size: 14.5px;}
+  .clip .track{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--clip-color, var(--track-work));
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 3px;
+  }
+  .clip .detail{
+    display:none;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+  .clip.open .detail{display:block;}
+  .detail-toggle{cursor:pointer;}
+
+  /* legend */
+  .legend{
+    display:flex; flex-wrap:wrap; gap: 10px 16px;
+    margin-top: 28px; padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .legend span{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10.5px; color: var(--text-dim);
+    display:flex; align-items:center; gap:6px;
+  }
+  .dot{width:7px; height:7px; border-radius:50%; display:inline-block;}
+
+  /* protips */
+  .notes{margin-top: 52px;}
+  .notes .eyebrow{color: var(--track-mind);}
+  h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 24px;
+    margin-top: 6px;
+    margin-bottom: 20px;
+  }
+  .note-card{
+    background: var(--bg-panel);
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    border-top: 2px solid var(--card-color, var(--track-mind));
+  }
+  .note-card h3{
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--card-color, var(--track-mind));
+    margin-bottom: 6px;
+  }
+  .note-card p{font-size: 13.5px; color: var(--text); opacity: 0.9;}
+
+  footer{
+    margin-top: 48px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow" id="date-label">TIMELINE</div>
+    <h1>Tu rutina</h1>
+    <p>Toca el círculo para marcar como hecho. Toca el bloque para ver la nota.</p>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-label">Progreso de hoy</span>
+      <span class="progress-pct" id="pct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
+    <div class="progress-sub" id="count">0 / 0 completados</div>
+    <button class="reset-btn" id="reset">Reiniciar día</button>
+  </div>
+
+  <div class="timeline" id="timeline"></div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="notes">
+    <div class="eyebrow">NOTAS DE PRODUCCIÓN</div>
+    <h2>Protips, personalizados</h2>
+    <div id="notes-list"></div>
+  </div>
+
+  <footer>ARMADA A PARTIR DEL VIDEO SOBRE PRODUCTIVIDAD Y NEUROCIENCIA</footer>
+</div>
+
+<script>
+const tracks = {
+  life:   {color:'var(--track-life)',   name:'Vida diaria'},
+  work:   {color:'var(--track-work)',   name:'Trabajo profundo'},
+  body:   {color:'var(--track-body)',   name:'Hábito · cuerpo'},
+  mind:   {color:'var(--track-mind)',   name:'Hábito · mente'},
+  spirit: {color:'var(--track-spirit)', name:'Hábito · espíritu'},
+  free:   {color:'var(--track-free)',   name:'Libre / dopamina'}
+};
+
+const blocks = [
+  {id:'b1',  time:'7:00',  end:'7:15',  track:'life',  label:'Despertar', detail:'Sin celular. Directo a la rutina, antes de cualquier dopamina fácil.'},
+  {id:'b2',  time:'7:15',  end:'7:35',  track:'life',  label:'Skincare (mañana)', detail:'CeraVe piel grasa + Neutrogena hidratante.'},
+  {id:'b3',  time:'7:35',  end:'7:50',  track:'life',  label:'Desayuno', detail:'Pan con huevos revueltos, ~15 min.'},
+  {id:'b4',  time:'7:50',  end:'8:15',  track:'life',  label:'Lavar ollas', detail:'Cierre de la rutina de activación.'},
+  {id:'b5',  time:'8:15',  end:'8:30',  track:'work',  label:'Definir misión del día', detail:'Una frase concreta, no "seguir con el proyecto". Ej: "terminar el color grading de los primeros 15s".'},
+  {id:'b6',  time:'8:30',  end:'13:00', track:'work',  label:'Trabajo profundo', detail:'Motion graphic en curso, portafolio, búsqueda de clientes, referencias de edición. Tu mejor energía va aquí.'},
+  {id:'b7',  time:'13:00', end:'13:15', track:'life',  label:'Almuerzo', detail:'~15 min, como lo haces normalmente.'},
+  {id:'b8',  time:'13:15', end:'13:30', track:'life',  label:'Descanso corto', detail:'Transición antes del bloque flexible.'},
+  {id:'b9',  time:'13:30', end:'16:30', track:'work',  label:'Bloque flexible', detail:'UNAD cuando toca (2-3 días al mes) o más trabajo/aprendizaje si no hay nada pendiente.'},
+  {id:'b10', time:'16:30', end:'17:15', track:'body',  label:'Hábito de cuerpo', detail:'Ejercicio — detalles a definir por ti.'},
+  {id:'b11', time:'17:15', end:'18:00', track:'spirit',label:'Caminata con música', detail:'Tu hábito de espíritu — recarga sin pantalla de tarea.'},
+  {id:'b12', time:'18:00', end:'18:30', track:'mind',  label:'Contenido random', detail:'Algo totalmente aparte de tu área — para que la cabeza descanse del mismo tema todo el día.'},
+  {id:'b13', time:'18:30', end:'18:45', track:'life',  label:'Ducha', detail:''},
+  {id:'b14', time:'18:45', end:'19:00', track:'life',  label:'Cena', detail:'Arepa con queso, huevo perico, o lo que estés antojado.'},
+  {id:'b15', time:'19:00', end:'22:30', track:'free',  label:'Valorant / Discord', detail:'Zaida y Valen. Tu dopamina concentrada al final, como recompensa por el bloque cumplido.'},
+  {id:'b16', time:'22:30', end:'23:00', track:'life',  label:'Desactivación', detail:'Skincare (noche), bajar del cel/juego.'},
+  {id:'b17', time:'23:00', end:null,    track:'life',  label:'Dormir', detail:'8h — clave para recuperación si vas a entrenar en serio.'}
+];
+
+const notes = [
+  {track:'work', title:'Ley de Parkinson', body:'Si le pones "trabajar en el motion graphic" sin límite, se te va a estirar toda la mañana sin avanzar realmente. Ponle tiempo fijo a cada sesión y vas a rendir más que dejándolo abierto.'},
+  {track:'work', title:'Ley de Pareto (80/20)', body:'Tu 20% que da resultados es terminar proyectos de portafolio y buscar clientes — no perfeccionar detalles infinitos ni gastar tu mejor energía en tareas de la UNAD que no te importan.'},
+  {track:'free', title:'Ley de Laborit', body:'Cuando pierdes en Valorant o te aburres editando, se te hace más fácil huir a jugar que seguir en la tarea difícil. No eres flojo — tu cerebro compara y elige lo más fácil disponible. Por eso el trabajo va primero, antes de que Valorant esté disponible como opción.'},
+  {track:'body', title:'Acción Mínima Viable', body:'Como tiendes al "todo o nada", esto es clave. En un mal día tu mínimo no es "editar 3 horas perfecto", es "abrir el proyecto y avanzar 20 min". Eso mantiene la racha sin frustrarte por no dar el 100%.'},
+  {track:'free', title:'Sobrecarga dopamínica', body:'Cel al despertar y Valorant a media tarea son tus fugas de dopamina. Muévelas al bloque de la noche y tu trabajo profundo va a rendir mucho más sin ese contraste brusco.'},
+  {track:'mind', title:'Misión en una frase', body:'Antes de sentarte a las 8:30am, no digas "voy a seguir con el motion graphic" — di "terminar el color grading de los primeros 15 segundos". Te evita perderte a mitad del bloque, como te pasa cuando te enredas explicando algo espontáneo.'},
+  {track:'spirit', title:'"Vísteme despacio que tengo prisa"', body:'Este es literalmente tu estilo natural: trabajar con calma incluso bajo presión. No eres lento, evitas errores que te tocaría corregir después. Defiende ese ritmo cuando te digan que eres lento.'}
+];
+
+function todayKey(){
+  const d = new Date();
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+  return `rutina-progreso:${y}-${m}-${day}`;
+}
+
+let completed = {};
+
+async function loadProgress(){
+  try{
+    const res = await window.storage.get(todayKey(), false);
+    if(res && res.value){
+      completed = JSON.parse(res.value);
+    }
+  }catch(e){
+    completed = {};
+  }
+}
+
+async function saveProgress(){
+  try{
+    await window.storage.set(todayKey(), JSON.stringify(completed), false);
+  }catch(e){
+    console.error('No se pudo guardar el progreso', e);
+  }
+}
+
+function updateProgressBar(){
+  const total = blocks.length;
+  const done = Object.values(completed).filter(Boolean).length;
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('fill').style.width = pct + '%';
+  document.getElementById('pct').textContent = pct + '%';
+  document.getElementById('count').textContent = `${done} / ${total} completados`;
+}
+
+function render(){
+  const timelineEl = document.getElementById('timeline');
+  timelineEl.innerHTML = '';
+  blocks.forEach(b => {
+    const t = tracks[b.track];
+    const isDone = !!completed[b.id];
+    const div = document.createElement('div');
+    div.className = 'block';
+    div.innerHTML = `
+      <div class="time">${b.time}</div>
+      <div class="clip ${isDone ? 'done' : ''}" style="--clip-color:${t.color}" data-id="${b.id}">
+        <button class="check" aria-label="Marcar completado">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#14151a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </button>
+        <div class="clip-body detail-toggle">
+          <div class="label">${b.label}</div>
+          <div class="track">${t.name}${b.end ? ' · ' + b.time + '–' + b.end : ''}</div>
+          ${b.detail ? `<div class="detail">${b.detail}</div>` : ''}
+        </div>
+      </div>
+    `;
+    timelineEl.appendChild(div);
+  });
+
+  document.querySelectorAll('.check').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const clip = btn.closest('.clip');
+      const id = clip.dataset.id;
+      completed[id] = !completed[id];
+      clip.classList.toggle('done');
+      updateProgressBar();
+      await saveProgress();
+    });
+  });
+
+  document.querySelectorAll('.detail-toggle').forEach(el => {
+    el.addEventListener('click', () => {
+      el.closest('.clip').classList.toggle('open');
+    });
+  });
+}
+
+document.getElementById('reset').addEventListener('click', async () => {
+  completed = {};
+  render();
+  updateProgressBar();
+  await saveProgress();
+});
+
+function renderLegendAndNotes(){
+  const legendEl = document.getElementById('legend');
+  Object.values(tracks).forEach(t => {
+    const span = document.createElement('span');
+    span.innerHTML = `<span class="dot" style="background:${t.color}"></span>${t.name}`;
+    legendEl.appendChild(span);
+  });
+
+  const notesEl = document.getElementById('notes-list');
+  notes.forEach(n => {
+    const t = tracks[n.track];
+    const div = document.createElement('div');
+    div.className = 'note-card';
+    div.style.setProperty('--card-color', t.color);
+    div.innerHTML = `<h3>${n.title}</h3><p>${n.body}</p>`;
+    notesEl.appendChild(div);
+  });
+}
+
+(async function init(){
+  const d = new Date();
+  document.getElementById('date-label').textContent =
+    'TIMELINE · ' + d.toLocaleDateString('es-CO', {day:'2-digit', month:'2-digit', year:'numeric'});
+  await loadProgress();
+  render();
+  updateProgressBar();
+  renderLegendAndNotes();
+})();
+</script>
+</body>
+</html>
